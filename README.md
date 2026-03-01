@@ -55,6 +55,18 @@ This repository extracts and keeps the existing standards from:
 ./scripts/refresh-from-sources.sh
 ```
 
+### 5) Initialize a new repository from a profile (recommended)
+
+```bash
+make init-profile PROFILE=vmware TARGET=../my-new-repo INIT_GIT=1 INIT_COMMIT=1
+```
+
+Equivalent script usage:
+
+```bash
+./scripts/init-repo.sh --profile vmware --target ../my-new-repo --with-git --commit
+```
+
 ## Recommended workflow
 
 - keep this repo as the single source of truth for standards;
