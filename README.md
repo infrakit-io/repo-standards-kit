@@ -3,8 +3,8 @@
 Cross-repo standardization kit for Go bootstrap projects.
 
 This repository extracts and keeps the existing standards from:
-- `~/work/GDC/vmware-vm-bootstrap`
-- `~/work/GDC/talos-docker-bootstrap`
+- `../vmware-vm-bootstrap` (example relative path)
+- `../talos-docker-bootstrap` (example relative path)
 
 ## What it standardizes
 
@@ -34,19 +34,19 @@ This repository extracts and keeps the existing standards from:
 ### 1) Sync dry-run
 
 ```bash
-./scripts/sync-profile.sh --profile vmware --target ~/work/GDC/vmware-vm-bootstrap --dry-run
+./scripts/sync-profile.sh --profile vmware --target ../vmware-vm-bootstrap --dry-run
 ```
 
 ### 2) Sync for real
 
 ```bash
-./scripts/sync-profile.sh --profile talos --target ~/work/GDC/talos-docker-bootstrap
+./scripts/sync-profile.sh --profile talos --target ../talos-docker-bootstrap
 ```
 
 ### 3) Sync go-library profile
 
 ```bash
-./scripts/sync-profile.sh --profile go-library --target ~/work/GDC/cli-wizard-core
+./scripts/sync-profile.sh --profile go-library --target ../cli-wizard-core
 ```
 
 ### 4) Refresh templates from source repos

@@ -3,6 +3,8 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 GDC_ROOT="${GDC_ROOT:-$HOME/work/GDC}"
+VMWARE_SOURCE_REPO="${VMWARE_SOURCE_REPO:-$GDC_ROOT/vmware-vm-bootstrap}"
+TALOS_SOURCE_REPO="${TALOS_SOURCE_REPO:-$GDC_ROOT/talos-docker-bootstrap}"
 
 copy_profile() {
   local profile="$1"
@@ -32,7 +34,7 @@ copy_profile() {
   done < "$manifest"
 }
 
-copy_profile "vmware" "$GDC_ROOT/vmware-vm-bootstrap"
-copy_profile "talos" "$GDC_ROOT/talos-docker-bootstrap"
+copy_profile "vmware" "$VMWARE_SOURCE_REPO"
+copy_profile "talos" "$TALOS_SOURCE_REPO"
 
 echo "All templates refreshed from source repos."
