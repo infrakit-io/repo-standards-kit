@@ -4,7 +4,7 @@ Cross-repo standardization kit for Go bootstrap projects.
 
 This repository extracts and keeps the existing standards from:
 - `~/work/GDC/vmware-vm-bootstrap`
-- `~/work/GDC/talos-vm-bootstrap`
+- `~/work/GDC/talos-docker-bootstrap`
 
 ## What it standardizes
 
@@ -36,7 +36,7 @@ This repository extracts and keeps the existing standards from:
 ### 2) Sync for real
 
 ```bash
-./scripts/sync-profile.sh --profile talos --target ~/work/GDC/talos-vm-bootstrap
+./scripts/sync-profile.sh --profile talos --target ~/work/GDC/talos-docker-bootstrap
 ```
 
 ### 3) Sync go-library profile

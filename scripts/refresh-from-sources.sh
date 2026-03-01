@@ -33,6 +33,6 @@ copy_profile() {
 }
 
 copy_profile "vmware" "$GDC_ROOT/vmware-vm-bootstrap"
-copy_profile "talos" "$GDC_ROOT/talos-vm-bootstrap"
+copy_profile "talos" "$GDC_ROOT/talos-docker-bootstrap"
 
 echo "All templates refreshed from source repos."
