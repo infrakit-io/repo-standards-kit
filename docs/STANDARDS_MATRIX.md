@@ -18,5 +18,5 @@
 
 ## Scope
 
-Acest kit gestionează doar fișierele explicit listate în `profiles/*.manifest`.
-Nu modifică codul de aplicație sau config-urile sensibile.
+This kit only manages files explicitly listed in `profiles/*.manifest`.
+It does not modify application code or sensitive configuration files.

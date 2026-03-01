@@ -1,30 +1,30 @@
 # repo-standards-kit
 
-Standardizare cross-repo pentru proiectele Go din seria bootstrap.
+Cross-repo standardization kit for Go bootstrap projects.
 
-Acest repo extrage și păstrează standardele existente din:
+This repository extracts and keeps the existing standards from:
 - `~/work/GDC/vmware-vm-bootstrap`
 - `~/work/GDC/talos-vm-bootstrap`
 
-## Ce standardizează
+## What it standardizes
 
-- `Makefile` (layout + ținte + output style)
+- `Makefile` (layout + targets + output style)
 - GitHub Actions: `ci.yml`, `release.yml`
-- scripturi operaționale: `scripts/install-requirements.sh`, `scripts/release-notes.sh`
+- operational scripts: `scripts/install-requirements.sh`, `scripts/release-notes.sh`
 
-## Structură
+## Structure
 
-- `templates/profiles/<profile>/...` — fișiere canonice per profil
-- `profiles/*.manifest` — lista fișierelor gestionate per profil
-- `scripts/sync-profile.sh` — aplică profilul într-un repo țintă
-- `scripts/refresh-from-sources.sh` — re-extrage template-urile din repo-urile sursă
+- `templates/profiles/<profile>/...` - canonical files per profile
+- `profiles/*.manifest` - list of managed files per profile
+- `scripts/sync-profile.sh` - applies a profile to a target repository
+- `scripts/refresh-from-sources.sh` - re-extracts templates from source repositories
 
-## Profile disponibile
+## Available profiles
 
 - `vmware-vm-bootstrap`
 - `talos-vm-bootstrap`
 
-## Utilizare
+## Usage
 
 ### 1) Sync dry-run
 
@@ -44,9 +44,9 @@ Acest repo extrage și păstrează standardele existente din:
 ./scripts/refresh-from-sources.sh
 ```
 
-## Recomandare de lucru
+## Recommended workflow
 
-- menții acest repo ca sursă de adevăr pentru standarde;
-- schimbi standardele aici;
-- aplici în repo-urile țintă prin `sync-profile.sh`;
-- validezi în fiecare repo: `make test && make build`.
+- keep this repo as the single source of truth for standards;
+- update standards here first;
+- apply updates in target repositories using `sync-profile.sh`;
+- validate in each target repo with: `make test && make build`.
