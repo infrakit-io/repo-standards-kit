@@ -2,6 +2,8 @@ Makefile
 .golangci.yml
 .github/workflows/ci.yml
 .github/workflows/release.yml
+SECURITY.md
+CONTRIBUTING.md
 scripts/install-requirements.sh
 scripts/release-notes.sh
 docs/RELEASES.md
