@@ -32,7 +32,7 @@ copy_profile() {
   done < "$manifest"
 }
 
-copy_profile "vmware-vm-bootstrap" "$GDC_ROOT/vmware-vm-bootstrap"
-copy_profile "talos-vm-bootstrap" "$GDC_ROOT/talos-vm-bootstrap"
+copy_profile "vmware" "$GDC_ROOT/vmware-vm-bootstrap"
+copy_profile "talos" "$GDC_ROOT/talos-vm-bootstrap"
 
 echo "All templates refreshed from source repos."

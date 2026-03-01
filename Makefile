@@ -11,11 +11,11 @@ refresh:
 	@./scripts/refresh-from-sources.sh
 
 sync-vmware:
-	@./scripts/sync-profile.sh --profile vmware-vm-bootstrap --target ~/work/GDC/vmware-vm-bootstrap
+	@./scripts/sync-profile.sh --profile vmware --target ~/work/GDC/vmware-vm-bootstrap
 
 sync-talos:
-	@./scripts/sync-profile.sh --profile talos-vm-bootstrap --target ~/work/GDC/talos-vm-bootstrap
+	@./scripts/sync-profile.sh --profile talos --target ~/work/GDC/talos-vm-bootstrap
 
 verify:
-	@./scripts/sync-profile.sh --profile vmware-vm-bootstrap --target ~/work/GDC/vmware-vm-bootstrap --dry-run
-	@./scripts/sync-profile.sh --profile talos-vm-bootstrap --target ~/work/GDC/talos-vm-bootstrap --dry-run
+	@./scripts/sync-profile.sh --profile vmware --target ~/work/GDC/vmware-vm-bootstrap --dry-run
+	@./scripts/sync-profile.sh --profile talos --target ~/work/GDC/talos-vm-bootstrap --dry-run

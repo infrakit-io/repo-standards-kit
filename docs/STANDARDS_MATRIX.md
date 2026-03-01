@@ -2,14 +2,14 @@
 
 ## Managed files per profile
 
-### vmware-vm-bootstrap
+### vmware
 - Makefile
 - .github/workflows/ci.yml
 - .github/workflows/release.yml
 - scripts/install-requirements.sh
 - scripts/release-notes.sh
 
-### talos-vm-bootstrap
+### talos
 - Makefile
 - .github/workflows/ci.yml
 - .github/workflows/release.yml

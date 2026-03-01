@@ -21,21 +21,21 @@ This repository extracts and keeps the existing standards from:
 
 ## Available profiles
 
-- `vmware-vm-bootstrap`
-- `talos-vm-bootstrap`
+- `vmware`
+- `talos`
 
 ## Usage
 
 ### 1) Sync dry-run
 
 ```bash
-./scripts/sync-profile.sh --profile vmware-vm-bootstrap --target ~/work/GDC/vmware-vm-bootstrap --dry-run
+./scripts/sync-profile.sh --profile vmware --target ~/work/GDC/vmware-vm-bootstrap --dry-run
 ```
 
 ### 2) Sync efectiv
 
 ```bash
-./scripts/sync-profile.sh --profile talos-vm-bootstrap --target ~/work/GDC/talos-vm-bootstrap
+./scripts/sync-profile.sh --profile talos --target ~/work/GDC/talos-vm-bootstrap
 ```
 
 ### 3) Refresh templates din source repos
