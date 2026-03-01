@@ -11,6 +11,10 @@ This repository extracts and keeps the existing standards from:
 - `Makefile` (layout + targets + output style)
 - GitHub Actions: `ci.yml`, `release.yml`
 - operational scripts: `scripts/install-requirements.sh`, `scripts/release-notes.sh`
+- talos tooling code for vmbootstrap integration:
+  - `internal/tooling/vmbootstrap/*`
+  - `tools/vmbootstrapctl/main.go`
+  - `internal/cli/vmbootstrap_assets.go`
 
 ## Structure
 
