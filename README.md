@@ -23,6 +23,7 @@ This repository extracts and keeps the existing standards from:
 
 - `vmware`
 - `talos`
+- `go-library`
 
 ## Usage
 
@@ -32,13 +33,19 @@ This repository extracts and keeps the existing standards from:
 ./scripts/sync-profile.sh --profile vmware --target ~/work/GDC/vmware-vm-bootstrap --dry-run
 ```
 
-### 2) Sync efectiv
+### 2) Sync for real
 
 ```bash
 ./scripts/sync-profile.sh --profile talos --target ~/work/GDC/talos-vm-bootstrap
 ```
 
-### 3) Refresh templates din source repos
+### 3) Sync go-library profile
+
+```bash
+./scripts/sync-profile.sh --profile go-library --target ~/work/GDC/cli-wizard-core
+```
+
+### 4) Refresh templates from source repos
 
 ```bash
 ./scripts/refresh-from-sources.sh

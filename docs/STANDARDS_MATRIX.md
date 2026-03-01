@@ -16,6 +16,13 @@
 - scripts/install-requirements.sh
 - scripts/release-notes.sh
 
+### go-library
+- Makefile
+- .golangci.yml
+- .github/workflows/ci.yml
+- .github/workflows/release.yml
+- scripts/install-requirements.sh
+
 ## Scope
 
 This kit only manages files explicitly listed in `profiles/*.manifest`.

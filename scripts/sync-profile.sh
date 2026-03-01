@@ -8,6 +8,7 @@ Usage: $0 --profile <name> --target <repo_path> [--dry-run]
 Profiles:
   vmware
   talos
+  go-library
 USAGE
 }
 
