@@ -68,6 +68,9 @@ Equivalent script usage:
 ./scripts/init-repo.sh --profile vmware --target ../my-new-repo --with-git --commit
 ```
 
+Note for `go-library` profile:
+- `init-repo.sh` also bootstraps `README.md` (only if missing) using the standard badge set, including `Go Report Card`.
+
 ## Recommended workflow
 
 - keep this repo as the single source of truth for standards;

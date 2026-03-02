@@ -44,6 +44,29 @@ fi
 
 "$SYNC_SCRIPT" --profile "$PROFILE" --target "$TARGET_ABS"
 
+# For new go-library repositories, bootstrap a README with standard badges
+# (including Go Report Card) without overwriting an existing README.
+if [[ "$PROFILE" == "go-library" ]]; then
+  README_TPL="$ROOT_DIR/templates/profiles/go-library/README.md.tmpl"
+  README_DST="$TARGET_ABS/README.md"
+  if [[ -f "$README_TPL" && ! -f "$README_DST" ]]; then
+    owner="OWNER"
+    repo="$(basename "$TARGET_ABS")"
+    if [[ -d "$TARGET_ABS/.git" ]]; then
+      remote_url="$(git -C "$TARGET_ABS" remote get-url origin 2>/dev/null || true)"
+      if [[ "$remote_url" =~ github\.com[:/]+([^/]+)/([^/.]+)(\.git)?$ ]]; then
+        owner="${BASH_REMATCH[1]}"
+        repo="${BASH_REMATCH[2]}"
+      fi
+    fi
+    sed \
+      -e "s/__REPO_OWNER__/${owner}/g" \
+      -e "s/__REPO_NAME__/${repo}/g" \
+      "$README_TPL" > "$README_DST"
+    echo "Initialized README.md from go-library template"
+  fi
+fi
+
 if [[ "$WITH_COMMIT" -eq 1 ]]; then
   if [[ ! -d "$TARGET_ABS/.git" ]]; then
     echo "Cannot commit: $TARGET_ABS is not a git repository (use --with-git)." >&2
