@@ -12,6 +12,9 @@ This repository extracts and keeps the existing standards from:
 - GitHub Actions: `ci.yml`, `release.yml`
 - Coverage badge automation (`docs/coverage/coverage.json` updated by CI)
 - operational scripts: `scripts/install-requirements.sh`, `scripts/release-notes.sh`
+- CLI error UX baseline:
+  - user-facing errors are printed via `github.com/Bibi40k/cli-wizard-core` `FormatCLIError`
+  - actionable hints use `NewUserError` / `WithHint` (no ad-hoc formatter per repo)
 - talos tooling code for vmbootstrap integration:
   - `internal/tooling/vmbootstrap/*`
   - `tools/vmbootstrapctl/main.go`

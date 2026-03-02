@@ -32,3 +32,8 @@
 
 This kit only manages files explicitly listed in `profiles/*.manifest`.
 It does not modify application code or sensitive configuration files.
+
+## Cross-repo CLI baseline
+
+- Use `cli-wizard-core` for user-facing CLI errors/hints (`FormatCLIError`, `NewUserError`, `WithHint`).
+- Avoid per-repository custom error renderers.
