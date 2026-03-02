@@ -7,3 +7,4 @@ CONTRIBUTING.md
 scripts/install-requirements.sh
 scripts/release-notes.sh
 docs/RELEASES.md
+docs/coverage/coverage.json

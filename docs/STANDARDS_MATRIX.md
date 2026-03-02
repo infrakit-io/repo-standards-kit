@@ -26,6 +26,7 @@
 - .github/workflows/ci.yml
 - .github/workflows/release.yml
 - scripts/install-requirements.sh
+- docs/coverage/coverage.json
 
 ## Scope
 

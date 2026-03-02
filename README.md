@@ -10,6 +10,7 @@ This repository extracts and keeps the existing standards from:
 
 - `Makefile` (layout + targets + output style)
 - GitHub Actions: `ci.yml`, `release.yml`
+- Coverage badge automation (`docs/coverage/coverage.json` updated by CI)
 - operational scripts: `scripts/install-requirements.sh`, `scripts/release-notes.sh`
 - talos tooling code for vmbootstrap integration:
   - `internal/tooling/vmbootstrap/*`
