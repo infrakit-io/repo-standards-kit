@@ -25,7 +25,11 @@
 - .golangci.yml
 - .github/workflows/ci.yml
 - .github/workflows/release.yml
+- .github/pull_request_template.md
 - scripts/install-requirements.sh
+- scripts/decision-contract-check.sh
+- scripts/security-check.sh
+- scripts/standards-check.sh
 - docs/coverage/coverage.json
 
 ## Scope

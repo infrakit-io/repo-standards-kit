@@ -16,6 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Decision contract checks
+        run: make decision-contract-check
+      - name: Security policy checks
+        run: make security-check
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod

@@ -1,4 +1,4 @@
-.PHONY: help build test test-v test-cover lint fmt vet vulncheck clean deps verify install-requirements check-go
+.PHONY: help build test test-v test-cover lint fmt vet decision-contract-check security-check vulncheck clean deps verify install-requirements check-go
 
 export GOTOOLCHAIN=auto
 SHELL := /bin/bash
@@ -13,6 +13,9 @@ GREY   := $(ESC)[90m
 RESET  := $(ESC)[0m
 
 GO_REQUIRED := $(shell awk '/^go /{print $$2}' go.mod)
+TOPIC ?=
+PROJECT ?= $(notdir $(CURDIR))
+INFRA_KB_ROOT ?= $(abspath ../infra-knowledge-base)
 
 help:
 	@printf "\n$(BOLD)go-library$(RESET)\n"
@@ -22,6 +25,10 @@ help:
 	@printf "    $(GREEN)make fmt$(RESET)           Format source files\n"
 	@printf "    $(GREEN)make vet$(RESET)           Run go vet\n"
 	@printf "    $(GREEN)make lint$(RESET)          Run golangci-lint (if installed)\n"
+	@printf "    $(GREEN)make decision-contract-check$(RESET)  Enforce wizard/menu contract decisions\n"
+	@printf "    $(GREEN)make security-check$(RESET)  Enforce SOPS and sensitive config policy\n"
+	@printf "    $(GREEN)make decision-check$(RESET)  Find relevant decisions (TOPIC=..., INFRA_KB_ROOT=...)\n"
+	@printf "    $(GREEN)make standards-check$(RESET) Decision context + contract/security checks (TOPIC=...)\n"
 	@printf "\n$(BOLD)  Testing$(RESET)\n"
 	@printf "    $(GREEN)make test$(RESET)          Run all tests\n"
 	@printf "    $(GREEN)make test-v$(RESET)        Run tests with verbose output\n"
@@ -103,6 +110,18 @@ lint:
 	}; \
 	printf "$(CYAN)Running golangci-lint...$(RESET)\n"; \
 	"$(GOLANGCI_LINT)" run ./...
+
+decision-contract-check:
+	@bash ./scripts/decision-contract-check.sh
+
+security-check:
+	@bash ./scripts/security-check.sh
+
+decision-check:
+	@bash "$(INFRA_KB_ROOT)/scripts/decision-check.sh" "$(TOPIC)" "$(PROJECT)"
+
+standards-check:
+	@bash ./scripts/standards-check.sh "$(TOPIC)" "$(PROJECT)" "$(INFRA_KB_ROOT)"
 
 fmt:
 	@printf "$(CYAN)Formatting code...$(RESET)\n"
