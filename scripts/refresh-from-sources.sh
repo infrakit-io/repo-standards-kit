@@ -2,9 +2,9 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-GDC_ROOT="${GDC_ROOT:-$HOME/work/GDC}"
-VMWARE_SOURCE_REPO="${VMWARE_SOURCE_REPO:-$GDC_ROOT/vmware-vm-bootstrap}"
-TALOS_SOURCE_REPO="${TALOS_SOURCE_REPO:-$GDC_ROOT/talos-docker-bootstrap}"
+INFRAKIT_ROOT="${INFRAKIT_ROOT:-$HOME/work/Bibi40k-GIT/infrakit-io}"
+VMWARE_SOURCE_REPO="${VMWARE_SOURCE_REPO:-$INFRAKIT_ROOT/vmware-vm-bootstrap}"
+TALOS_SOURCE_REPO="${TALOS_SOURCE_REPO:-$INFRAKIT_ROOT/talos-docker-bootstrap}"
 
 copy_profile() {
   local profile="$1"
