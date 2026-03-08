@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Bibi40k/talos-docker-bootstrap/internal/tooling/vmbootstrap"
+	"github.com/infrakit-io/talos-docker-bootstrap/internal/tooling/vmbootstrap"
 )
 
 func main() {

@@ -64,10 +64,10 @@ func IsUpdateAvailable() (current string, latest string, hasUpdate bool, err err
 		return "", "", false, err
 	}
 
-	updCmd := exec.Command("go", "list", "-m", "-u", "-f", "{{if .Update}}{{.Update.Version}}{{end}}", "github.com/Bibi40k/vmware-vm-bootstrap")
+	updCmd := exec.Command("go", "list", "-m", "-u", "-f", "{{if .Update}}{{.Update.Version}}{{end}}", "github.com/infrakit-io/vmware-vm-bootstrap")
 	updOut, updErr := updCmd.Output()
 	if updErr != nil {
-		updCmdDirect := exec.Command("go", "list", "-m", "-u", "-f", "{{if .Update}}{{.Update.Version}}{{end}}", "github.com/Bibi40k/vmware-vm-bootstrap")
+		updCmdDirect := exec.Command("go", "list", "-m", "-u", "-f", "{{if .Update}}{{.Update.Version}}{{end}}", "github.com/infrakit-io/vmware-vm-bootstrap")
 		updCmdDirect.Env = append(os.Environ(), "GOPROXY=direct")
 		updOut, updErr = updCmdDirect.Output()
 		if updErr != nil {
@@ -80,7 +80,7 @@ func IsUpdateAvailable() (current string, latest string, hasUpdate bool, err err
 }
 
 func CurrentPinnedVersion() (string, error) {
-	curCmd := exec.Command("go", "list", "-m", "-f", "{{.Version}}", "github.com/Bibi40k/vmware-vm-bootstrap")
+	curCmd := exec.Command("go", "list", "-m", "-f", "{{.Version}}", "github.com/infrakit-io/vmware-vm-bootstrap")
 	curOut, curErr := curCmd.Output()
 	if curErr != nil {
 		return "", fmt.Errorf("resolve current vmbootstrap module version: %w", curErr)
@@ -89,7 +89,7 @@ func CurrentPinnedVersion() (string, error) {
 }
 
 func UpdatePinToLatest() (string, error) {
-	getCmd := exec.Command("go", "get", "github.com/Bibi40k/vmware-vm-bootstrap@latest")
+	getCmd := exec.Command("go", "get", "github.com/infrakit-io/vmware-vm-bootstrap@latest")
 	getCmd.Stdout = os.Stdout
 	getCmd.Stderr = os.Stderr
 	if err := getCmd.Run(); err != nil {
@@ -103,7 +103,7 @@ func UpdatePinToLatest() (string, error) {
 		return "", fmt.Errorf("go mod tidy after vmbootstrap pin update: %w", err)
 	}
 
-	curCmd := exec.Command("go", "list", "-m", "-f", "{{.Version}}", "github.com/Bibi40k/vmware-vm-bootstrap")
+	curCmd := exec.Command("go", "list", "-m", "-f", "{{.Version}}", "github.com/infrakit-io/vmware-vm-bootstrap")
 	curOut, err := curCmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("read updated vmbootstrap module version: %w", err)
@@ -124,7 +124,7 @@ func InstallPinnedToDir(dir string) (version string, installedPath string, err e
 		return "", "", fmt.Errorf("create install dir %s: %w", absDir, err)
 	}
 
-	cmd := exec.Command("go", "install", "github.com/Bibi40k/vmware-vm-bootstrap/cmd/vmbootstrap@"+version)
+	cmd := exec.Command("go", "install", "github.com/infrakit-io/vmware-vm-bootstrap/cmd/vmbootstrap@"+version)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Env = append(os.Environ(), "GOBIN="+absDir)
@@ -221,7 +221,7 @@ func syncOneAsset(rel, src, dst string, force bool) error {
 }
 
 func moduleSourceDir() (string, error) {
-	cmd := exec.Command("go", "list", "-m", "-f", "{{.Dir}}", "github.com/Bibi40k/vmware-vm-bootstrap")
+	cmd := exec.Command("go", "list", "-m", "-f", "{{.Dir}}", "github.com/infrakit-io/vmware-vm-bootstrap")
 	out, err := cmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("resolve vmbootstrap module source dir: %w", err)
