@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Block decrypted SOPS files from being committed
+if git diff --cached --name-only | grep -q '\.decrypted~'; then
+  echo "ERROR: Attempting to commit decrypted SOPS files:"
+  git diff --cached --name-only | grep '\.decrypted~'
+  echo "Run: git reset HEAD <file> to unstage, then add to .gitignore"
+  exit 1
+fi
+
+# Verify SOPS metadata on staged .sops.yaml files
+for f in $(git diff --cached --name-only | grep '\.sops\.yaml$' || true); do
+  if [ -f "$f" ] && ! grep -Eq '^[[:space:]]*sops:' "$f" 2>/dev/null; then
+    echo "ERROR: $f is missing SOPS metadata (plaintext .sops.yaml)"
+    echo "Encrypt it first: sops --encrypt --in-place $f"
+    exit 1
+  fi
+done

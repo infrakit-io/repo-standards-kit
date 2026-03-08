@@ -20,6 +20,8 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+      - name: Security check
+        run: bash scripts/security-check.sh
       - run: go test ./...
       - run: go vet ./...
 
