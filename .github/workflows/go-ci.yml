@@ -84,7 +84,7 @@ jobs:
         run: govulncheck ./...
 
   coverage:
-    if: ${{ inputs.coverage-badge && github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+    if: ${{ inputs.coverage-badge && github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
