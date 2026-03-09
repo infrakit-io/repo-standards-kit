@@ -1,4 +1,4 @@
-.PHONY: help refresh sync-vmware sync-talos sync-go-lib verify init-profile
+.PHONY: help refresh sync-vmware sync-talos sync-go-lib verify init-profile setup
 
 VMWARE_TARGET ?= ../vmware-vm-bootstrap
 TALOS_TARGET ?= ../talos-docker-bootstrap
@@ -50,3 +50,9 @@ init-profile:
 	if [ "$(INIT_GIT)" = "1" ] || [ "$(INIT_GIT)" = "true" ]; then GIT_FLAG="--with-git"; fi; \
 	if [ "$(INIT_COMMIT)" = "1" ] || [ "$(INIT_COMMIT)" = "true" ]; then COMMIT_FLAG="--commit"; fi; \
 	./scripts/init-repo.sh --profile "$(PROFILE)" --target "$(TARGET)" $$GIT_FLAG $$COMMIT_FLAG
+
+setup:
+	@mkdir -p .git/hooks
+	@cp templates/common/hooks/pre-commit .git/hooks/pre-commit
+	@chmod +x .git/hooks/pre-commit
+	@printf "pre-commit hook installed\n"

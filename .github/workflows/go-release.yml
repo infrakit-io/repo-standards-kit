@@ -1,0 +1,108 @@
+name: Go Release (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      go-version:
+        description: 'Go version override (leave empty to use go.mod)'
+        required: false
+        type: string
+        default: ''
+      binary-name:
+        description: 'Binary name for multi-platform builds (leave empty for library-only release)'
+        required: false
+        type: string
+        default: ''
+      build-path:
+        description: 'Go build path for binary (e.g., ./cmd/myapp). Required if binary-name is set.'
+        required: false
+        type: string
+        default: ''
+      version:
+        description: 'Release version (for workflow_dispatch). If empty, uses the pushed tag.'
+        required: false
+        type: string
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+          go-version-file: go.mod
+
+      - name: Run tests
+        run: go test ./...
+
+      - name: Set release version
+        id: version
+        run: |
+          if [ -n "${{ inputs.version }}" ]; then
+            echo "value=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build multi-platform binaries
+        if: ${{ inputs.binary-name != '' }}
+        run: |
+          mkdir -p dist
+          for GOOS in linux darwin windows; do
+            for GOARCH in amd64 arm64; do
+              if [ "$GOOS" = "windows" ] && [ "$GOARCH" = "arm64" ]; then
+                continue
+              fi
+              ext=""
+              if [ "$GOOS" = "windows" ]; then
+                ext=".exe"
+              fi
+              CGO_ENABLED=0 GOOS=$GOOS GOARCH=$GOARCH go build \
+                -o dist/${{ inputs.binary-name }}-${GOOS}-${GOARCH}${ext} \
+                ${{ inputs.build-path }}
+            done
+          done
+          (cd dist && sha256sum * > sha256sums.txt)
+
+      - name: Generate release notes
+        run: |
+          mkdir -p dist
+          ./scripts/release-notes.sh "${{ steps.version.outputs.value }}" > dist/release-notes.md
+
+      - name: Ensure tag exists (manual releases)
+        if: ${{ inputs.version != '' }}
+        run: |
+          if git rev-parse "${{ steps.version.outputs.value }}" >/dev/null 2>&1; then
+            echo "Tag ${{ steps.version.outputs.value }} already exists"
+          else
+            echo "Tag ${{ steps.version.outputs.value }} does not exist. Create and push it first."
+            exit 1
+          fi
+
+      - name: Create GitHub Release (library)
+        if: ${{ inputs.binary-name == '' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.value }}
+          name: ${{ steps.version.outputs.value }}
+          body_path: dist/release-notes.md
+          draft: ${{ github.event_name == 'push' && inputs.version == '' }}
+
+      - name: Create GitHub Release (binary)
+        if: ${{ inputs.binary-name != '' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.value }}
+          name: ${{ steps.version.outputs.value }}
+          body_path: dist/release-notes.md
+          files: dist/*
+          draft: ${{ github.event_name == 'push' && inputs.version == '' }}
+          fail_on_unmatched_files: true

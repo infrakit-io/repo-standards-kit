@@ -5,39 +5,16 @@ on:
     branches: [ master ]
   pull_request:
 
-concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-permissions:
-  contents: read
-
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-      - name: Security check
-        run: bash scripts/security-check.sh
-      - run: go test ./...
-      - run: go vet ./...
-
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-      - uses: golangci/golangci-lint-action@v7
-        with:
-          version: v2.10.1
+  ci:
+    uses: infrakit-io/repo-standards-kit/.github/workflows/go-ci.yml@v1
+    permissions:
+      contents: read
 
   core-coverage:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -46,35 +23,19 @@ jobs:
       - name: Core coverage gate
         run: make test-cover
 
-  vulncheck:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-      - name: Install govulncheck
-        run: go install golang.org/x/vuln/cmd/govulncheck@latest
-      - name: govulncheck
-        run: govulncheck ./...
-
   coverage:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-    concurrency:
-      group: coverage-badge-${{ github.ref }}
-      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-      - name: Generate coverage
-        run: |
-          go run ./tools/buildctl coverage-badges --repo-root .
-      - name: Commit coverage badge
+      - name: Generate coverage badges
+        run: go run ./tools/buildctl coverage-badges --repo-root .
+      - name: Commit coverage badges
         run: |
           if git diff --quiet -- docs/coverage/coverage.json docs/coverage/coverage-all.json docs/coverage/coverage-core.json; then
             echo "No coverage change"
