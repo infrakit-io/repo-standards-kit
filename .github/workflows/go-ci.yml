@@ -28,6 +28,11 @@ on:
         required: false
         type: string
         default: 'v2.10.1'
+      coverage-threshold:
+        description: 'Minimum coverage percentage (0-100). Enforced on every push/PR. Set 0 to disable.'
+        required: false
+        type: number
+        default: 0
 
 jobs:
   test:
@@ -117,3 +122,32 @@ jobs:
           git add docs/coverage/coverage.json
           git commit -m "chore: update coverage badge"
           git push
+
+  coverage-gate:
+    if: ${{ inputs.coverage-threshold > 0 }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+          go-version-file: go.mod
+      - name: Coverage gate (minimum ${{ inputs.coverage-threshold }}%)
+        run: |
+          mkdir -p tmp
+          if [ -n "${{ inputs.coverage-exclude-pattern }}" ]; then
+            PKGS=$(go list ./... | grep -v '${{ inputs.coverage-exclude-pattern }}')
+            go test -coverprofile=tmp/coverage.out $PKGS
+          else
+            go test -coverprofile=tmp/coverage.out ./...
+          fi
+          total=$(go tool cover -func=tmp/coverage.out | tail -1 | awk '{print $3}')
+          pct=${total%%%}
+          threshold=${{ inputs.coverage-threshold }}
+          if awk "BEGIN {exit !($pct < $threshold)}"; then
+            echo "::error::Coverage ${total} is below minimum ${threshold}%"
+            exit 1
+          fi
+          echo "Coverage ${total} >= ${threshold}% ✓"

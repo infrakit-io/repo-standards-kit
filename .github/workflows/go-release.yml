@@ -26,6 +26,7 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
 jobs:
   release:
@@ -39,6 +40,27 @@ jobs:
         with:
           go-version: ${{ inputs.go-version }}
           go-version-file: go.mod
+
+      - name: CI gate — verify CI passed on this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          SHA=$(git rev-parse HEAD)
+          echo "Checking CI status for commit $SHA"
+          RESULT=$(gh run list \
+            --repo "$GITHUB_REPOSITORY" \
+            --commit "$SHA" \
+            --workflow "CI" \
+            --status "completed" \
+            --json "conclusion" \
+            --jq '.[0].conclusion' 2>/dev/null || echo "")
+          if [ "$RESULT" = "success" ]; then
+            echo "CI gate passed"
+          else
+            echo "::error::CI gate failed: no successful CI run for commit $SHA (got: '${RESULT:-none}')"
+            echo "Push to master first and let CI pass before tagging a release."
+            exit 1
+          fi
 
       - name: Run tests
         run: go test ./...
