@@ -1,0 +1,18 @@
+# Sensitive patterns — anti-leak pre-commit guard.
+# Each line is a grep -E compatible pattern matched against staged diff lines.
+# Add per-repo exceptions in .sensitive-patterns.ignore
+
+# Personal domains / usernames (replace with your org-specific patterns)
+# cadolino\.ro
+# bibi40k
+# /home/bibi40k
+
+# AWS / GCP / Azure credentials
+AKIA[0-9A-Z]{16}
+AIza[0-9A-Za-z\-_]{35}
+
+# Private keys
+-----BEGIN (RSA|EC|OPENSSH|PGP) PRIVATE KEY-----
+
+# Generic high-entropy secrets (base64, 40+ hex chars)
+[0-9a-f]{40,}

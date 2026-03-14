@@ -17,3 +17,35 @@ for f in $(git diff --cached --name-only | grep '\.sops\.yaml$' || true); do
     exit 1
   fi
 done
+
+# Scan staged files for sensitive patterns (anti-leak guard).
+# Define patterns in .sensitive-patterns (one grep -E pattern per line).
+# Add per-repo exceptions in .sensitive-patterns.ignore (one grep -E pattern per line).
+_PATTERNS_FILE=".sensitive-patterns"
+_IGNORE_FILE=".sensitive-patterns.ignore"
+
+if [ -f "$_PATTERNS_FILE" ]; then
+  _staged_files=$(git diff --cached --name-only | grep -v '\.sops\.yaml$' | grep -v '^\.claude/' || true)
+  if [ -n "$_staged_files" ]; then
+    _ignore_pattern=""
+    if [ -f "$_IGNORE_FILE" ]; then
+      _ignore_pattern=$(grep -v '^#' "$_IGNORE_FILE" | grep -v '^$' | paste -sd '|' - 2>/dev/null || true)
+    fi
+    while IFS= read -r pattern; do
+      [[ -z "$pattern" || "$pattern" == \#* ]] && continue
+      for f in $_staged_files; do
+        [ -f "$f" ] || continue
+        _matches=$(git diff --cached -- "$f" | grep '^+' | grep -v '^+++' | grep -E "$pattern" || true)
+        if [ -n "$_matches" ]; then
+          if [ -n "$_ignore_pattern" ] && echo "$_matches" | grep -qE "$_ignore_pattern"; then
+            continue
+          fi
+          echo "ERROR: Sensitive pattern '$pattern' found in staged changes to $f"
+          echo "$_matches" | head -3
+          echo "If this is a false positive, add an exception pattern to $_IGNORE_FILE"
+          exit 1
+        fi
+      done
+    done < "$_PATTERNS_FILE"
+  fi
+fi

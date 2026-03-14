@@ -10,5 +10,7 @@ scripts/decision-contract-check.sh
 scripts/security-check.sh
 scripts/standards-check.sh
 scripts/release-notes.sh
+CODE_STYLE.md
+docs/CHANGELOG.md
 docs/RELEASES.md
 docs/coverage/coverage.json

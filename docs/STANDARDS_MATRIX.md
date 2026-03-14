@@ -26,10 +26,16 @@
 - .github/workflows/ci.yml
 - .github/workflows/release.yml
 - .github/pull_request_template.md
+- SECURITY.md
+- CONTRIBUTING.md
+- CODE_STYLE.md
 - scripts/install-requirements.sh
 - scripts/decision-contract-check.sh
 - scripts/security-check.sh
 - scripts/standards-check.sh
+- scripts/release-notes.sh
+- docs/CHANGELOG.md
+- docs/RELEASES.md
 - docs/coverage/coverage.json
 
 ## Scope
