@@ -34,6 +34,9 @@ on:
         type: number
         default: 0
 
+env:
+  GONOSUMDB: "github.com/infrakit-io/*"
+
 jobs:
   test:
     runs-on: ubuntu-latest
