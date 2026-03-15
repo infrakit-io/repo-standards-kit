@@ -44,16 +44,18 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+          go-version-file: go.mod
+      - name: Install go-task
+        run: go install github.com/go-task/task/v3/cmd/task@latest
       - name: Security policy checks
         if: ${{ inputs.security-checks }}
         run: make security-check
       - name: Decision contract checks
         if: ${{ inputs.security-checks }}
         run: make decision-contract-check
-      - uses: actions/setup-go@v5
-        with:
-          go-version: ${{ inputs.go-version }}
-          go-version-file: go.mod
       - run: go test ./...
       - run: go vet ./...
 
