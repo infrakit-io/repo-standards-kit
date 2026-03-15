@@ -16,5 +16,8 @@ jobs:
     uses: infrakit-io/repo-standards-kit/.github/workflows/go-release.yml@v1
     permissions:
       contents: write
+      actions: read
     with:
+      binary-name: talos-docker-bootstrap
+      build-path: ./cmd/talos-docker-bootstrap
       version: ${{ inputs.version || '' }}

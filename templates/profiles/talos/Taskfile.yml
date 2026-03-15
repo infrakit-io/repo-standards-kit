@@ -1,0 +1,202 @@
+version: '3'
+
+vars:
+  CONFIG: '{{.CONFIG | default "configs/talos-bootstrap.yaml"}}'
+  DRY: '{{.DRY | default "0"}}'
+  FORCE: '{{.FORCE | default "0"}}'
+  VMBOOTSTRAP_BIN: '{{.VMBOOTSTRAP_BIN | default "bin/vmbootstrap"}}'
+  VMBOOTSTRAP_REPO: '{{.VMBOOTSTRAP_REPO | default "../vmware-vm-bootstrap"}}'
+  VMBOOTSTRAP_GOPROXY: '{{.VMBOOTSTRAP_GOPROXY | default "direct"}}'
+  VMBOOTSTRAP_AUTO_BUILD: '{{.VMBOOTSTRAP_AUTO_BUILD | default "false"}}'
+  VMBOOTSTRAP_UPDATE_NOTIFY: '{{.VMBOOTSTRAP_UPDATE_NOTIFY | default "true"}}'
+  # Core packages for coverage gate
+  COVER_PKGS: ./internal/bootstrap ./internal/config ./internal/workflow
+
+includes:
+  _common:
+    taskfile: ../Taskfile.common.yml
+    flatten: true
+    dir: '.'
+    # Override _check-go (custom preflight), test-cover (specific pkgs), clean (extra files)
+    excludes: [_check-go, test-cover, clean]
+    vars:
+      REPO_NAME: talos-docker-bootstrap
+      REPO_STANDARDS_KIT: ../repo-standards-kit
+      CLI_BIN: bin/talos-docker-bootstrap
+
+tasks:
+  # --- Overrides of common tasks ---
+
+  _check-go:
+    internal: true
+    cmds:
+      - go run ./tools/buildctl preflight --required-go "{{.GO_REQUIRED}}"
+    vars:
+      GO_REQUIRED:
+        sh: awk '/^go /{print $2}' go.mod
+
+  test-cover:
+    desc: Run core coverage gate (./internal/bootstrap ./internal/config ./internal/workflow)
+    deps: [_check-go]
+    cmds:
+      - mkdir -p tmp
+      - go test -coverprofile=tmp/coverage.out {{.COVER_PKGS}}
+      - go tool cover -html=tmp/coverage.out -o tmp/coverage.html
+      - echo "Coverage report -> tmp/coverage.html"
+
+  test-cover-all:
+    desc: Run full-package coverage report (tmp/coverage.all.html)
+    deps: [_check-go]
+    cmds:
+      - mkdir -p tmp
+      - cmd: |
+          PKGS=$(go list ./... | grep -v '/tools')
+          go test -coverprofile=tmp/coverage.all.out $PKGS
+          go tool cover -html=tmp/coverage.all.out -o tmp/coverage.all.html
+          echo "Full coverage report -> tmp/coverage.all.html"
+
+  clean:
+    desc: Remove build artifacts and test cache
+    cmds:
+      - rm -f bin/talos-docker-bootstrap
+      - rm -f tmp/coverage.out tmp/coverage.html tmp/coverage.all.out tmp/coverage.all.html
+      - go clean -testcache
+      - echo "Clean complete"
+
+  # --- Build ---
+
+  build-cli:
+    desc: Build talos-docker-bootstrap CLI binary
+    deps: [_check-go]
+    cmds:
+      - mkdir -p bin
+      - go build -o bin/talos-docker-bootstrap ./cmd/talos-docker-bootstrap
+      - 'echo "Built: bin/talos-docker-bootstrap"'
+
+  # --- VM Management ---
+
+  config:
+    desc: Interactive config manager (create/edit VM and Talos bootstrap configs)
+    deps: [build-cli]
+    cmds:
+      - >-
+        bin/talos-docker-bootstrap config
+        --config "{{.CONFIG}}"
+        --vmbootstrap-bin "{{.VMBOOTSTRAP_BIN}}"
+        --vmbootstrap-repo "{{.VMBOOTSTRAP_REPO}}"
+        --vmbootstrap-auto-build="{{.VMBOOTSTRAP_AUTO_BUILD}}"
+        --vmbootstrap-update-notify="{{.VMBOOTSTRAP_UPDATE_NOTIFY}}"
+
+  vm-deploy:
+    desc: Select a VM config and bootstrap it
+    aliases: [run]
+    deps: [build-cli]
+    cmds:
+      - >-
+        bin/talos-docker-bootstrap vm-deploy
+        --vmbootstrap-bin "{{.VMBOOTSTRAP_BIN}}"
+        --vmbootstrap-repo "{{.VMBOOTSTRAP_REPO}}"
+        --vmbootstrap-auto-build="{{.VMBOOTSTRAP_AUTO_BUILD}}"
+        --vmbootstrap-update-notify="{{.VMBOOTSTRAP_UPDATE_NOTIFY}}"
+        {{if .BOOTSTRAP_RESULT}}--bootstrap-result "{{.BOOTSTRAP_RESULT}}"{{end}}
+
+  # --- Talos Management ---
+
+  talos-bootstrap:
+    desc: Run Talos bootstrap (Docker + Talos). Use DRY=1 for dry-run.
+    deps: [build-cli]
+    cmds:
+      - go run ./tools/buildctl require-config --path "{{.CONFIG}}"
+      - >-
+        bin/talos-docker-bootstrap bootstrap
+        --config "{{.CONFIG}}"
+        {{if eq .DRY "1"}}--dry-run{{end}}
+
+  talos-bootstrap-dry:
+    desc: Dry-run Talos bootstrap (no changes)
+    aliases: [run-dry]
+    cmds:
+      - task: talos-bootstrap
+        vars:
+          DRY: "1"
+
+  run-workflow:
+    desc: Advanced (CI/pipeline) orchestrated flow
+    deps: [build-cli]
+    cmds:
+      - go run ./tools/buildctl require-config --path "{{.CONFIG}}"
+      - >-
+        bin/talos-docker-bootstrap provision-and-bootstrap
+        --config "{{.CONFIG}}"
+        {{if .VM_CONFIG}}--vm-config "{{.VM_CONFIG}}"{{end}}
+        {{if .BOOTSTRAP_RESULT}}--bootstrap-result "{{.BOOTSTRAP_RESULT}}"{{end}}
+        --vmbootstrap-bin "{{.VMBOOTSTRAP_BIN}}"
+        --vmbootstrap-repo "{{.VMBOOTSTRAP_REPO}}"
+        --vmbootstrap-auto-build="{{.VMBOOTSTRAP_AUTO_BUILD}}"
+        --vmbootstrap-update-notify="{{.VMBOOTSTRAP_UPDATE_NOTIFY}}"
+
+  # --- Cluster Operations ---
+
+  cluster-status:
+    desc: Show remote Talos cluster status
+    deps: [build-cli]
+    cmds:
+      - go run ./tools/buildctl require-config --path "{{.CONFIG}}"
+      - bin/talos-docker-bootstrap cluster-status --config "{{.CONFIG}}"
+
+  mount-check:
+    desc: Verify mount path visibility in Talos node
+    deps: [build-cli]
+    cmds:
+      - go run ./tools/buildctl require-config --path "{{.CONFIG}}"
+      - bin/talos-docker-bootstrap mount-check --config "{{.CONFIG}}"
+
+  kubeconfig-export:
+    desc: Export kubeconfig (required vars - OUT=<path>)
+    deps: [build-cli]
+    cmds:
+      - go run ./tools/buildctl require-config --path "{{.CONFIG}}"
+      - go run ./tools/buildctl require-out --out "{{.OUT}}"
+      - bin/talos-docker-bootstrap kubeconfig-export --config "{{.CONFIG}}" --out "{{.OUT}}"
+
+  # --- vmbootstrap Tool Management ---
+
+  install-vmbootstrap:
+    desc: Install pinned vmbootstrap CLI from go.mod
+    deps: [_check-go]
+    cmds:
+      - >-
+        GOPROXY="{{.VMBOOTSTRAP_GOPROXY}}"
+        go run ./tools/vmbootstrapctl install --dir "{{.ROOT_DIR}}/bin"
+        >/tmp/vmbootstrap-install.out
+      - cat /tmp/vmbootstrap-install.out && rm -f /tmp/vmbootstrap-install.out
+      - task: vmbootstrap-sync-assets
+
+  update-vmbootstrap-pin:
+    desc: Update vmbootstrap module pin to latest
+    deps: [_check-go]
+    cmds:
+      - cmd: |
+          NEW=$(GOPROXY="{{.VMBOOTSTRAP_GOPROXY}}" go run ./tools/vmbootstrapctl update-pin)
+          echo "Updated pin. New version: $NEW"
+      - task: vmbootstrap-sync-assets
+
+  vmbootstrap-sync-assets:
+    internal: true
+    cmds:
+      - cmd: |
+          FORCE_FLAG=""
+          if [ "{{.FORCE}}" = "1" ] || [ "{{.FORCE}}" = "true" ]; then
+            FORCE_FLAG="--force"
+          fi
+          GOPROXY="{{.VMBOOTSTRAP_GOPROXY}}" go run ./tools/vmbootstrapctl sync-assets \
+            --repo-root "{{.ROOT_DIR}}" $FORCE_FLAG
+
+  # --- Install ---
+
+  install:
+    desc: Install talos-docker-bootstrap CLI to GOPATH/bin
+    deps: [_check-go]
+    cmds:
+      - go install ./cmd/talos-docker-bootstrap
+      - 'echo "Installed: talos-docker-bootstrap"'

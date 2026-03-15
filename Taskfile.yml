@@ -1,0 +1,57 @@
+version: '3'
+
+vars:
+  VMWARE_TARGET: '{{.VMWARE_TARGET | default "../vmware-vm-bootstrap"}}'
+  TALOS_TARGET:  '{{.TALOS_TARGET  | default "../talos-docker-bootstrap"}}'
+  GO_LIB_TARGET: '{{.GO_LIB_TARGET | default "../cli-wizard-core"}}'
+  PROFILE:       '{{.PROFILE       | default "vmware"}}'
+  TARGET:        '{{.TARGET        | default "../new-repo"}}'
+  INIT_GIT:      '{{.INIT_GIT      | default "1"}}'
+  INIT_COMMIT:   '{{.INIT_COMMIT   | default "1"}}'
+
+tasks:
+
+  refresh:
+    desc: Refresh templates from source repos
+    cmds:
+      - ./scripts/refresh-from-sources.sh
+
+  sync-vmware:
+    desc: Apply vmware profile to vmware-vm-bootstrap (VMWARE_TARGET=...)
+    cmds:
+      - ./scripts/sync-profile.sh --profile vmware --target "{{.VMWARE_TARGET}}"
+
+  sync-talos:
+    desc: Apply talos profile to talos-docker-bootstrap (TALOS_TARGET=...)
+    cmds:
+      - ./scripts/sync-profile.sh --profile talos --target "{{.TALOS_TARGET}}"
+
+  sync-go-lib:
+    desc: Apply go-library profile to cli-wizard-core (GO_LIB_TARGET=...)
+    cmds:
+      - ./scripts/sync-profile.sh --profile go-library --target "{{.GO_LIB_TARGET}}"
+
+  verify:
+    desc: Dry-run all three profile syncs
+    cmds:
+      - ./scripts/sync-profile.sh --profile vmware --target "{{.VMWARE_TARGET}}" --dry-run
+      - ./scripts/sync-profile.sh --profile talos --target "{{.TALOS_TARGET}}" --dry-run
+      - ./scripts/sync-profile.sh --profile go-library --target "{{.GO_LIB_TARGET}}" --dry-run
+
+  init-profile:
+    desc: Initialize a new repo from profile (PROFILE=vmware|talos|go-library TARGET=... INIT_GIT=1 INIT_COMMIT=1)
+    cmds:
+      - cmd: |
+          GIT_FLAG=""
+          COMMIT_FLAG=""
+          if [ "{{.INIT_GIT}}" = "1" ] || [ "{{.INIT_GIT}}" = "true" ]; then GIT_FLAG="--with-git"; fi
+          if [ "{{.INIT_COMMIT}}" = "1" ] || [ "{{.INIT_COMMIT}}" = "true" ]; then COMMIT_FLAG="--commit"; fi
+          ./scripts/init-repo.sh --profile "{{.PROFILE}}" --target "{{.TARGET}}" $GIT_FLAG $COMMIT_FLAG
+
+  setup:
+    desc: Install pre-commit hook
+    cmds:
+      - mkdir -p .git/hooks
+      - cp templates/common/hooks/pre-commit .git/hooks/pre-commit
+      - chmod +x .git/hooks/pre-commit
+      - echo "pre-commit hook installed"

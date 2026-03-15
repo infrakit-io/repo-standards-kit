@@ -1,4 +1,5 @@
 Makefile
+Taskfile.yml
 .github/workflows/ci.yml
 .github/workflows/release.yml
 scripts/install-requirements.sh

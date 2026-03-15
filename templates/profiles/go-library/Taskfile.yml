@@ -1,0 +1,44 @@
+version: '3'
+
+vars:
+  REPO_NAME:         '{{.REPO_NAME | default ""}}'
+  TOPIC:             '{{.TOPIC             | default ""}}'
+  PROJECT:           '{{.PROJECT           | default ""}}'
+  INFRA_KB_ROOT:     '{{.INFRA_KB_ROOT     | default "../infra-knowledge-base"}}'
+  REPO_STANDARDS_KIT: '{{.REPO_STANDARDS_KIT | default "../repo-standards-kit"}}'
+
+includes:
+  _common:
+    taskfile: ../Taskfile.common.yml
+    flatten: true
+    dir: '.'
+    vars:
+      REPO_NAME:          '{{.REPO_NAME}}'
+      REPO_STANDARDS_KIT: '{{.REPO_STANDARDS_KIT}}'
+
+tasks:
+
+  install-requirements:
+    desc: Install required tools (golangci-lint, govulncheck, etc.)
+    cmds:
+      - bash scripts/install-requirements.sh
+
+  decision-contract-check:
+    desc: Fail on wizard/menu contract deviations from accepted decisions
+    cmds:
+      - bash ./scripts/decision-contract-check.sh
+
+  security-check:
+    desc: Fail on plaintext .sops.yaml or forbidden direct SOPS encryption patterns
+    cmds:
+      - bash ./scripts/security-check.sh
+
+  decision-check:
+    desc: Find and list relevant private decisions (TOPIC=... INFRA_KB_ROOT=...)
+    cmds:
+      - bash "{{.INFRA_KB_ROOT}}/scripts/decision-check.sh" "{{.TOPIC}}" "{{.PROJECT}}"
+
+  standards-check:
+    desc: Decision gate + security gate (requires TOPIC=...)
+    cmds:
+      - bash ./scripts/standards-check.sh "{{.TOPIC}}" "{{.PROJECT}}" "{{.INFRA_KB_ROOT}}"

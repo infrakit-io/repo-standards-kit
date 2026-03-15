@@ -1,58 +1,27 @@
-.PHONY: help refresh sync-vmware sync-talos sync-go-lib verify init-profile setup
+# Compatibility shim — all targets delegate to Taskfile.yml
+# Migrate: use `task <command>` directly
+# Install go-task: go install github.com/go-task/task/v3/cmd/task@latest
 
-VMWARE_TARGET ?= ../vmware-vm-bootstrap
-TALOS_TARGET ?= ../talos-docker-bootstrap
-GO_LIB_TARGET ?= ../cli-wizard-core
-PROFILE ?= vmware
-TARGET ?= ../new-repo
-INIT_GIT ?= 1
-INIT_COMMIT ?= 1
+SHELL  := /bin/bash
+_TASK  := $(or $(shell command -v task 2>/dev/null),$(shell go env GOPATH 2>/dev/null)/bin/task)
+
+define _require_task
+@test -x "$(_TASK)" || { printf "go-task not found.\nInstall: go install github.com/go-task/task/v3/cmd/task@latest\n"; exit 1; }
+endef
+
+.DEFAULT_GOAL := help
+.PHONY: FORCE help
 
 help:
-	@echo "repo-standards-kit"
-	@echo "  make refresh      - refresh templates from source repos"
-	@echo "  make sync-vmware  - apply vmware profile to vmware-vm-bootstrap"
-	@echo "  make sync-talos   - apply talos profile to talos-docker-bootstrap"
-	@echo "  make sync-go-lib  - apply go-library profile to cli-wizard-core"
-	@echo "  make verify       - dry-run both profiles"
-	@echo "  make init-profile - initialize a new repo from profile"
-	@echo ""
-	@echo "Targets can be overridden:"
-	@echo "  VMWARE_TARGET=$(VMWARE_TARGET)"
-	@echo "  TALOS_TARGET=$(TALOS_TARGET)"
-	@echo "  GO_LIB_TARGET=$(GO_LIB_TARGET)"
-	@echo ""
-	@echo "Init options:"
-	@echo "  PROFILE=$(PROFILE)"
-	@echo "  TARGET=$(TARGET)"
-	@echo "  INIT_GIT=$(INIT_GIT)"
-	@echo "  INIT_COMMIT=$(INIT_COMMIT)"
+	$(_require_task)
+	@$(_TASK) --list
 
-refresh:
-	@./scripts/refresh-from-sources.sh
+# Prevent Make from trying to remake the Makefile itself via %: catch-all
+Makefile GNUmakefile: ;
 
-sync-vmware:
-	@./scripts/sync-profile.sh --profile vmware --target "$(VMWARE_TARGET)"
+# FORCE as PHONY prerequisite ensures %: always runs (handles build/ dirs etc.)
+FORCE:
 
-sync-talos:
-	@./scripts/sync-profile.sh --profile talos --target "$(TALOS_TARGET)"
-
-sync-go-lib:
-	@./scripts/sync-profile.sh --profile go-library --target "$(GO_LIB_TARGET)"
-
-verify:
-	@./scripts/sync-profile.sh --profile vmware --target "$(VMWARE_TARGET)" --dry-run
-	@./scripts/sync-profile.sh --profile talos --target "$(TALOS_TARGET)" --dry-run
-	@./scripts/sync-profile.sh --profile go-library --target "$(GO_LIB_TARGET)" --dry-run
-
-init-profile:
-	@GIT_FLAG=""; COMMIT_FLAG=""; \
-	if [ "$(INIT_GIT)" = "1" ] || [ "$(INIT_GIT)" = "true" ]; then GIT_FLAG="--with-git"; fi; \
-	if [ "$(INIT_COMMIT)" = "1" ] || [ "$(INIT_COMMIT)" = "true" ]; then COMMIT_FLAG="--commit"; fi; \
-	./scripts/init-repo.sh --profile "$(PROFILE)" --target "$(TARGET)" $$GIT_FLAG $$COMMIT_FLAG
-
-setup:
-	@mkdir -p .git/hooks
-	@cp templates/common/hooks/pre-commit .git/hooks/pre-commit
-	@chmod +x .git/hooks/pre-commit
-	@printf "pre-commit hook installed\n"
+%: FORCE
+	$(_require_task)
+	@$(_TASK) $@
