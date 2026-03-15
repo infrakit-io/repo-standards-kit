@@ -99,7 +99,7 @@ func TestSyncDefaultsFileMergesMissingKeysWithoutForce(t *testing.T) {
 		"talos:\n" +
 		"  default_version: v1.11.0\n" +
 		"  plan_network:\n" +
-		"    cidr: 192.168.115.0/24\n"
+		"    cidr: 192.168.100.0/24\n"
 
 	if err := os.WriteFile(src, []byte(srcYAML), 0o644); err != nil {
 		t.Fatalf("write src: %v", err)
@@ -130,7 +130,7 @@ func TestSyncDefaultsFileMergesMissingKeysWithoutForce(t *testing.T) {
 		t.Fatalf("expected local talos.default_version preserved, got %v", talos["default_version"])
 	}
 	planNet := talos["plan_network"].(map[string]any)
-	if planNet["cidr"] != "192.168.115.0/24" {
+	if planNet["cidr"] != "192.168.100.0/24" {
 		t.Fatalf("expected local talos.plan_network.cidr preserved, got %v", planNet["cidr"])
 	}
 	if planNet["gateway"] != "192.168.110.1" {

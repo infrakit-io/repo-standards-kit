@@ -3,9 +3,9 @@
 # Add per-repo exceptions in .sensitive-patterns.ignore
 
 # Personal domains / usernames (replace with your org-specific patterns)
-# cadolino\.ro
-# bibi40k
-# /home/bibi40k
+cadolino\.ro
+bibi40k
+/home/bibi40k
 
 # AWS / GCP / Azure credentials
 AKIA[0-9A-Z]{16}

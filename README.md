@@ -17,7 +17,7 @@ This repository extracts and keeps the existing standards from:
   - `scripts/security-check.sh`
   - `scripts/standards-check.sh`
 - CLI error UX baseline:
-  - user-facing errors are printed via `github.com/Bibi40k/cli-wizard-core` `FormatCLIError`
+  - user-facing errors are printed via `github.com/infrakit-io/cli-wizard-core` `FormatCLIError`
   - actionable hints use `NewUserError` / `WithHint` (no ad-hoc formatter per repo)
 - talos tooling code for vmbootstrap integration:
   - `internal/tooling/vmbootstrap/*`
