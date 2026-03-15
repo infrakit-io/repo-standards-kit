@@ -1,0 +1,160 @@
+# Common Go tasks shared across all infrakit-io Go repos.
+#
+# Usage in each repo's Taskfile.yml:
+#   includes:
+#     _common:
+#       taskfile: ../Taskfile.common.yml
+#       flatten: true
+#       dir: '.'
+#       vars:
+#         REPO_NAME: my-repo
+#         REPO_STANDARDS_KIT: ../repo-standards-kit
+#
+# Variables (override via vars: in includes):
+#   REPO_NAME          - display name shown in output
+#   REPO_STANDARDS_KIT - path to repo-standards-kit (for pre-commit hook)
+version: '3'
+
+silent: true
+
+env:
+  GOTOOLCHAIN: auto
+
+vars:
+  REPO_NAME: '{{.REPO_NAME | default "this repo"}}'
+  REPO_STANDARDS_KIT: '{{.REPO_STANDARDS_KIT | default "../repo-standards-kit"}}'
+  # Optional: binary to remove on clean (e.g. "bin/vmbootstrap")
+  CLI_BIN: '{{.CLI_BIN | default ""}}'
+
+tasks:
+  _check-go:
+    internal: true
+    cmds:
+      - cmd: |
+          LOCAL=$(GOTOOLCHAIN=local go env GOVERSION 2>/dev/null | sed 's/^go//' || echo "")
+          if [ -z "$LOCAL" ]; then
+            echo "Go not found in PATH. Run: task setup"
+            exit 1
+          fi
+          REQUIRED=$(awk '/^go /{print $2}' go.mod 2>/dev/null || echo "")
+          if [ -z "$REQUIRED" ]; then
+            exit 0
+          fi
+          LOWEST=$(printf '%s\n%s\n' "$REQUIRED" "$LOCAL" | sort -V | head -n1)
+          if [ "$LOWEST" != "$REQUIRED" ]; then
+            echo "Local Go too old (local: $LOCAL, required: $REQUIRED). Run: task setup"
+            exit 1
+          fi
+
+  build:
+    desc: Compile all packages
+    deps: [_check-go]
+    cmds:
+      - echo "Compiling {{.REPO_NAME}}..."
+      - go build ./...
+      - echo "OK"
+
+  test:
+    desc: Run all tests
+    deps: [_check-go]
+    cmds:
+      - go test ./...
+
+  test-v:
+    desc: Run tests with verbose output
+    deps: [_check-go]
+    cmds:
+      - go test -v ./...
+
+  test-cover:
+    desc: Run tests with coverage report (tmp/coverage.html)
+    deps: [_check-go]
+    cmds:
+      - mkdir -p tmp
+      - go test -coverprofile=tmp/coverage.out ./...
+      - go tool cover -html=tmp/coverage.out -o tmp/coverage.html
+      - echo "Coverage report -> tmp/coverage.html"
+
+  lint:
+    desc: Run golangci-lint (skips if not installed)
+    cmds:
+      - cmd: |
+          LINT=$(command -v golangci-lint 2>/dev/null)
+          if [ -z "$LINT" ]; then
+            LINT="$(go env GOPATH)/bin/golangci-lint"
+          fi
+          if [ ! -x "$LINT" ]; then
+            echo "golangci-lint not installed. Run: task setup"
+            exit 0
+          fi
+          echo "Running golangci-lint..."
+          "$LINT" run ./...
+
+  fmt:
+    desc: Format source files
+    cmds:
+      - go fmt ./...
+      - echo "Done"
+
+  vet:
+    desc: Run go vet
+    deps: [_check-go]
+    cmds:
+      - go vet ./...
+      - echo "Done"
+
+  vulncheck:
+    desc: Run govulncheck (skips if not installed)
+    cmds:
+      - cmd: |
+          VULN=$(command -v govulncheck 2>/dev/null)
+          if [ -z "$VULN" ]; then
+            VULN="$(go env GOPATH)/bin/govulncheck"
+          fi
+          if [ ! -x "$VULN" ]; then
+            echo "govulncheck not installed. Run: task setup"
+            exit 0
+          fi
+          echo "Running govulncheck..."
+          GOTOOLCHAIN=auto "$VULN" ./...
+
+  deps:
+    desc: Download and tidy dependencies
+    deps: [_check-go]
+    cmds:
+      - go mod download
+      - go mod tidy
+      - echo "Done"
+
+  verify:
+    desc: Verify dependency checksums
+    deps: [_check-go]
+    cmds:
+      - go mod verify
+
+  clean:
+    desc: Remove build artifacts and test cache
+    cmds:
+      - 'test -z "{{.CLI_BIN}}" || rm -f "{{.CLI_BIN}}"'
+      - rm -f tmp/coverage.out tmp/coverage.html
+      - go clean -testcache
+      - echo "Clean complete"
+
+  setup:
+    desc: Install tools and pre-commit hook
+    vars:
+      RSK: '{{.REPO_STANDARDS_KIT}}'
+    cmds:
+      - bash scripts/install-requirements.sh
+      - cmd: |
+          HOOK="{{.RSK}}/templates/common/hooks/pre-commit"
+          if [ -f "$HOOK" ]; then
+            mkdir -p .git/hooks
+            cp "$HOOK" .git/hooks/pre-commit
+            chmod +x .git/hooks/pre-commit
+            echo "pre-commit hook installed"
+          else
+            echo "Hook not found at $HOOK"
+            echo "Set REPO_STANDARDS_KIT=<path> to override"
+            exit 1
+          fi
