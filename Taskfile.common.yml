@@ -30,7 +30,7 @@ tasks:
   default:
     silent: true
     cmds:
-      - task -l
+      - bash {{.REPO_STANDARDS_KIT}}/../infra-knowledge-base/scripts/task-list.sh --categories
 
   _check-go:
     internal: true
