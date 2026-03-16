@@ -27,6 +27,11 @@ vars:
   CLI_BIN: '{{.CLI_BIN | default ""}}'
 
 tasks:
+  default:
+    silent: true
+    cmds:
+      - task -l
+
   _check-go:
     internal: true
     cmds:

@@ -10,6 +10,10 @@ vars:
   INIT_COMMIT:   '{{.INIT_COMMIT   | default "1"}}'
 
 tasks:
+  default:
+    silent: true
+    cmds:
+      - task -l
 
   refresh:
     desc: Refresh templates from source repos
